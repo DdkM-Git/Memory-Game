@@ -1,30 +1,61 @@
 import { Button, Paper } from "@mui/material";
-import { useState } from "react";
+import { ClickStepType, PanelCardPropsInterface } from "..";
 import "./style.css";
-import { PanelStep } from "..";
+import { Dispatch, useEffect, useState } from "react";
+import { click } from "@testing-library/user-event/dist/click";
 
-export interface PanelCardInterface {
-  order: number;
-  image: string;
+export interface PanelCardInterface extends PanelCardPropsInterface {
+  backImage: string;
+  currentPanelCard: PanelCardPropsInterface | undefined;
+  setCurrentPanelCard: Dispatch<PanelCardPropsInterface | undefined>;
+  clickStep: ClickStepType;
+  setClickStep: Dispatch<ClickStepType>;
 }
 
-function PanelCard(props: PanelCardInterface) {
-  const [isClicked, setClicked] = useState<boolean>(false);
+type PanelCardTurnStepType = "none" | "turned-on" | "turned-off";
 
-  function nextStep(currentStep: PanelStep) {
-    /*if (step === "no-ckecked") {
-      setStep("single-checked");
-    } else if (step === "single-checked") {
-      setStep("double-checked");
+function PanelCard(props: PanelCardInterface) {
+  /*function nextStep(currentStep: ClickStepType) {
+    if (props.clickStep === "no-ckecked") {
+      props.setClickStep("single-checked");
+    } else if (props.clickStep === "single-checked") {
+      props.setClickStep("no-ckecked");
+    } else if (props.clickStep === "double-checked") {
+      props.setClickStep("no-ckecked");
+    }
+  }*/
+
+  const [turnStep, setTurnStep] = useState<PanelCardTurnStepType>("none");
+
+  function nextStep(currentCard: PanelCardPropsInterface | undefined) {
+    if (currentCard === undefined) {
+      setTurnStep("turned-on");
+      props.setCurrentPanelCard({
+        order: props.order,
+        pairId: props.pairId,
+        frontImage: props.frontImage,
+      });
     } else {
-      setStep("no-ckecked");
-    }*/
+      setTurnStep("turned-on");
+      props.setCurrentPanelCard(undefined);
+    }
   }
+
+  useEffect(() => {
+    if (
+      props.currentPanelCard !== undefined &&
+      props.currentPanelCard.order !== props.order &&
+      props.currentPanelCard.pairId !== props.pairId &&
+      turnStep === "turned-on"
+    ) {
+      setTurnStep("turned-off");
+    }
+  }, [props.currentPanelCard]);
 
   return (
     <Button
       onClick={() => {
-        setClicked(true);
+        nextStep(props.currentPanelCard);
       }}
       sx={{
         padding: "0px",
@@ -33,14 +64,14 @@ function PanelCard(props: PanelCardInterface) {
       <style>
         {`@keyframes slidein${props.order} {
                 from {
-                    background: url("https://cdn.pixabay.com/photo/2023/12/08/23/46/cat-8438334_960_720.jpg");
+                    background: url(${props.backImage});
                     background-size: cover;
                     background-position: center;
                 }
 
                 25% {
                     transform: scale(1.1);
-                    background: url("https://cdn.pixabay.com/photo/2023/12/08/23/46/cat-8438334_960_720.jpg");
+                    background: url(${props.backImage});
                     background-size: cover;
                     background-position: center;
                 }
@@ -50,14 +81,45 @@ function PanelCard(props: PanelCardInterface) {
                 }
 
                 75% {
-                    background: url(${props.image});
+                    background: url(${props.frontImage});
                     transform: scale(1.1);
                     background-size: cover;
                     background-position: center;
                 }
 
                 to {
-                    background: url(${props.image});
+                    background: url(${props.frontImage});
+                    background-size: cover;
+                    background-position: center;
+                }
+            }`}
+        {`@keyframes slideout${props.order} {
+                from {
+                    background: url(${props.frontImage});
+                    background-size: cover;
+                    background-position: center;
+                }
+
+                25% {
+                    background: url(${props.frontImage});
+                    transform: scale(1.1);
+                    background-size: cover;
+                    background-position: center;
+                }
+
+                50% {
+                    transform: rotate3d(0, 0.5, 0.5, 3.142rad);
+                }
+
+                75% {
+                    transform: scale(1.1);
+                    background: url(${props.backImage});
+                    background-size: cover;
+                    background-position: center;
+                }
+
+                to {
+                    background: url(${props.backImage});
                     background-size: cover;
                     background-position: center;
                 }
@@ -68,8 +130,8 @@ function PanelCard(props: PanelCardInterface) {
         sx={{
           width: "100%",
           height: "100%",
-          animation: isClicked ? `3s 1 alternate slidein${props.order}` : "none",
-          background: isClicked ? `url(${props.image})` : 'url("https://cdn.pixabay.com/photo/2023/12/08/23/46/cat-8438334_960_720.jpg")',
+          animation: turnStep === "none" ? "none" : turnStep === "turned-on" ? `3s 1 alternate slidein${props.order}` : `3s 1 alternate slideout${props.order}`,
+          background: turnStep === "none" ? `url(${props.backImage})` : `url(${props.frontImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}

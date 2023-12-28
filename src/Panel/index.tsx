@@ -12,35 +12,42 @@ import panelImage8 from "../images/PanelImage8.jpg";
 import panelBackgroundImage from "../images/PanelBackgroundImage.jpg";
 import shuffleArray from "../utils/shuffleArray";
 
-export type PanelStep = "no-ckecked" | "single-checked" | "double-checked";
+export interface PanelCardPropsInterface {
+  order: number;
+  pairId: number;
+  frontImage: string;
+}
 
-function generatePanelCards(): PanelCardInterface[] {
-  let newPanelCards: PanelCardInterface[] = [
-    { image: panelImage1, order: 1 },
-    { image: panelImage1, order: 1 },
-    { image: panelImage2, order: 2 },
-    { image: panelImage2, order: 2 },
-    { image: panelImage3, order: 3 },
-    { image: panelImage3, order: 3 },
-    { image: panelImage4, order: 4 },
-    { image: panelImage4, order: 4 },
-    { image: panelImage5, order: 5 },
-    { image: panelImage5, order: 5 },
-    { image: panelImage6, order: 6 },
-    { image: panelImage6, order: 6 },
-    { image: panelImage7, order: 7 },
-    { image: panelImage7, order: 7 },
-    { image: panelImage8, order: 8 },
-    { image: panelImage8, order: 8 },
+function generatePanelCards(): PanelCardPropsInterface[] {
+  let newPanelCards: PanelCardPropsInterface[] = [
+    { frontImage: panelImage1, pairId: 1, order: 1 },
+    { frontImage: panelImage1, pairId: 1, order: 2 },
+    { frontImage: panelImage2, pairId: 2, order: 3 },
+    { frontImage: panelImage2, pairId: 2, order: 4 },
+    { frontImage: panelImage3, pairId: 3, order: 5 },
+    { frontImage: panelImage3, pairId: 3, order: 6 },
+    { frontImage: panelImage4, pairId: 4, order: 7 },
+    { frontImage: panelImage4, pairId: 4, order: 8 },
+    { frontImage: panelImage5, pairId: 5, order: 9 },
+    { frontImage: panelImage5, pairId: 5, order: 10 },
+    { frontImage: panelImage6, pairId: 6, order: 11 },
+    { frontImage: panelImage6, pairId: 6, order: 12 },
+    { frontImage: panelImage7, pairId: 7, order: 13 },
+    { frontImage: panelImage7, pairId: 7, order: 14 },
+    { frontImage: panelImage8, pairId: 8, order: 15 },
+    { frontImage: panelImage8, pairId: 8, order: 16 },
   ];
   shuffleArray(newPanelCards);
   return newPanelCards;
 }
 
-function Panel() {
-  const [step, setStep] = useState<PanelStep>();
+export type ClickStepType = "no-ckecked" | "single-checked" | "double-checked";
 
-  const panelCards: PanelCardInterface[] = useMemo(() => generatePanelCards(), []);
+function Panel() {
+  const [clickStep, setClickStep] = useState<ClickStepType>("no-ckecked");
+  const [currentCard, setCurrentCard] = useState<PanelCardPropsInterface | undefined>(undefined);
+
+  const panelCards: PanelCardPropsInterface[] = useMemo(() => generatePanelCards(), []);
 
   return (
     <Box sx={{ width: "80%" }}>
@@ -58,7 +65,18 @@ function Panel() {
         }}
       >
         {panelCards.map((pC) => {
-          return <PanelCard image={pC.image} order={pC.order} />;
+          return (
+            <PanelCard
+              frontImage={pC.frontImage}
+              backImage={panelBackgroundImage}
+              pairId={pC.pairId}
+              order={pC.order}
+              currentPanelCard={currentCard}
+              setCurrentPanelCard={setCurrentCard}
+              clickStep={clickStep}
+              setClickStep={setClickStep}
+            />
+          );
         })}
       </Box>
     </Box>
